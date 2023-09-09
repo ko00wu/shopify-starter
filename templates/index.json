@@ -1,0 +1,23 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-index-products",
+      "settings": {
+        "section_title": "Section Main Index Products"
+      },
+      "blocks": {
+        "banner": {
+          "type": "banner",
+          "settings": {
+            "title": "Banner"
+          }
+        },
+        "product_list": {
+          "type": "product_list"
+        }
+      },
+      "block_order": ["banner", "product_list"]
+    }
+  },
+  "order": ["main"]
+}

@@ -1,0 +1,79 @@
+{% comment %} for循环section.blocks，这里的section.blocks是由schema定义，并且在templates的json文件中声明才有值 {% endcomment %}
+<h1>{{ 'main-index-products.general_title' | t }}</h1>
+{% for block in section.blocks %}
+  {% case block.type %}
+      {% comment %} case跟js的switch类似 {% endcomment %}
+    {% when 'banner' %}
+      {% comment %} when跟js的case类似 {% endcomment %}
+      <div
+        class="banner-container"
+        style="background-image: url({{ block.settings.background_image | image_url: width: 300 }})"
+      >
+        {% comment %} image_url是图片的过滤器，可以根据图片对象生成url {% endcomment %}
+        <h2 {{ block.shopify_attributes }}>{{ block.settings.title }}</h2>
+        {% comment %} block.settings.title是由schema中定义的 {% endcomment %}
+        {% if block.settings.plate != blank %}
+          <div class="plate-box">
+            {% comment %} image_url | image_tag跟vue过滤器设计类似，也是链式过滤器，根据图片对象先生成url，再生成<img>标签 {% endcomment %}
+            {{ block.settings.plate | image_url: width: 300 | image_tag }}
+          </div>
+        {% endif %}
+      </div>
+    {% when 'product_list' %}
+      <ul>
+        {% for product in collections.frontpage.products %}
+          {% comment %} collections是liquid的全局对象，collections.frontpage.products表示获取产品系列中frontpage的产品列表，可以直接使用，全局对象可参考文档https://shopify.dev/docs/api/liquid/objects {% endcomment %}
+          <li>
+            {% render 'product-item', product: product %}
+          </li>
+          {% comment %} render语句可以引用snippets目录下定义页面片段，snippets可以理解为组件，只能在liquid文件使用，不能在templates的json文件使用，product: product表示传参 {% endcomment %}
+        {% endfor %}
+      </ul>
+  {% endcase %}
+{% endfor %}
+
+{% schema %}
+// 用来给管理后台的编辑器进行内容配置，只有配置了shema，后台才可以在编辑器里配置内容
+// 下面例子只是做简单表述，完整的shema规则参考https://shopify.dev/docs/themes/architecture/sections/section-schema
+{
+  "name": "首页的产品列表分区", // 定义分区名
+  "settings": [
+    // 定义分区的配置
+    {
+      "type": "text",
+      "id": "section_title",
+      "label": "t:sections.main-index-products.section_title"
+    }
+  ],
+  "blocks": [
+    // 定义分区的区块
+    {
+      "type": "banner", // 定义区块名称，方便引用，引用的地方在两处，一处是在section文件的通过上面for循环block.type来判断，另一处是在templates的json中的blocks中使用
+      "name": "横幅", // 方便后台查看
+      "settings": [
+        // 定义区块的内容
+        {
+          "type": "text", // 区块内容的类型，常用的string类型的有text,textarea,inline_richtext，media类型的有image_picker，参考文档https://shopify.dev/docs/themes/architecture/settings/input-settings
+          "id": "title", // 引用的句柄
+          "label": "横幅的标题", // 区块内容的名称，方便后台编辑器看
+          "default": "标题" // string类型有default设置默认值
+        },
+        {
+          "type": "image_picker",
+          "id": "background_image",
+          "label": "横幅的背景图"
+        },
+        {
+          "type": "image_picker",
+          "id": "plate",
+          "label": "横幅的插画"
+        }
+      ]
+    },
+    {
+      "type": "product_list",
+      "name": "产品列表"
+    }
+  ]
+}
+{% endschema %}
